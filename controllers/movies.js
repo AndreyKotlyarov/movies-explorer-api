@@ -7,15 +7,40 @@ const created = require('../utils/consts');
 
 const getMovies = (req, res, next) => {
   movieModel
-    .find({})
+    .find({ owner: req.user._id })
     .then((movies) => res.send(movies))
     .catch((err) => next(err));
 };
 
 const createMovie = (req, res, next) => {
-  const { movieId, country, director, duration, year, description, image, trailerLink, nameRU, nameEN, thumbnail } = req.body;
+  const {
+    movieId,
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    nameRU,
+    nameEN,
+    thumbnail,
+  } = req.body;
   movieModel
-    .create({ movieId, country, director, duration, year, description, image, trailerLink, nameRU, nameEN, thumbnail, owner: req.user._id })
+    .create({
+      movieId,
+      country,
+      director,
+      duration,
+      year,
+      description,
+      image,
+      trailerLink,
+      nameRU,
+      nameEN,
+      thumbnail,
+      owner: req.user._id,
+    })
     .then((movie) => {
       res.status(created).send(movie);
     })
@@ -37,9 +62,9 @@ const deleteMovie = (req, res, next) => {
       } else if (movie.owner.toString() !== req.user._id) {
         next(new ForbiddenError('Недостаточно прав для удаления'));
       } else {
-        movieModel.findByIdAndRemove(req.params.movieId)
-          .then((c) => res.send(c));
-      }
+        return movieModel.findByIdAndRemove(req.params.movieId)
+          .then((m) => res.send(m));
+      } return null;
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -54,4 +79,4 @@ module.exports = {
   getMovies,
   createMovie,
   deleteMovie,
-}
+};

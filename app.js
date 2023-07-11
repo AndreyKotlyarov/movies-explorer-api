@@ -16,14 +16,13 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_URL = 'mongodb://localhost:27017/bitfilmsdb' } = process.env;
 
 const app = express();
 
-
 app.use(helmet());
 
-mongoose.connect('mongodb://localhost:27017/moviesexplorerdb', { useNewUrlParser: true })
+mongoose.connect(DB_URL, { useNewUrlParser: true })
   .then(() => console.log('Подключение к базе данных успешно'))
   .catch((err) => {
     console.log('Ошибка подключения к базе данных', err);

@@ -14,7 +14,7 @@ const login = (req, res, next) => {
   return userModel.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', { expiresIn: '7d' });
-      res.send({ token }).select('-password');
+      res.send({ token });
     })
     .catch((err) => next(err));
 };
@@ -36,16 +36,12 @@ const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => userModel.create({
       name: req.body.name,
-      about: req.body.about,
-      avatar: req.body.avatar,
       email: req.body.email,
       password: hash,
     }))
     .then((user) => {
       res.status(created).send({
         name: user.name,
-        about: user.about,
-        avatar: user.avatar,
         email: user.email,
         _id: user._id,
       });
@@ -72,11 +68,11 @@ const updateUser = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с указанным email-ом уже существует'));
+      } else if (err instanceof mongoose.Error.ValidationError) {
         next(new ValidationError('Ошибка валидации'));
-      } else {
-        next(err);
-      }
+      } else { next(err); }
     });
 };
 
